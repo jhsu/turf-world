@@ -1,5 +1,5 @@
 import "./App.css";
-import {MapControls} from "@react-three/drei";
+// import {MapControls} from "@react-three/drei";
 import {Canvas} from "@react-three/fiber";
 
 import World from "./components/World";

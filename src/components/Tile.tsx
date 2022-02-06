@@ -1,8 +1,7 @@
 import {Ref, Suspense} from "react";
-import {Mesh} from "three";
 import Plot from "./Plot";
 
-const Tile = ({size, meshRef}: {size?: number; meshRef?: Ref<Mesh>}) => {
+const Tile = ({size, meshRef}: {size?: number; meshRef?: Ref<any>}) => {
   return (
     <group>
       <Suspense fallback={null}>

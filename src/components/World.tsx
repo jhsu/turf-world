@@ -1,10 +1,9 @@
+import {useRef} from "react";
 import {useThree} from "@react-three/fiber";
 import {useControls} from "leva";
 
-import {useRef} from "react";
 import Tile from "./Tile";
 import LOCATIONS from "./positions";
-import {Mesh} from "three";
 
 const SIZE = 150 * 71;
 function scale(value: number) {
@@ -13,7 +12,6 @@ function scale(value: number) {
 
 const World = () => {
   const {camera} = useThree();
-  const meshRef = useRef<Mesh>();
 
   const [, set] = useControls(() => ({
     plotId: {
