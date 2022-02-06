@@ -7,7 +7,7 @@ import World from "./components/World";
 export default function App() {
   return (
     <div style={{width: "100%", height: "100%"}}>
-      <Canvas orthographic camera={{position: [0, 0, 1], zoom: 1}}>
+      <Canvas orthographic camera={{position: [0, 0, 100], zoom: 1}}>
         {/* <MapControls
           up={[0, 0, 1]}
           screenSpacePanning={true}

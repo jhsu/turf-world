@@ -1,14 +1,20 @@
-import {Camera, useFrame, useThree} from "@react-three/fiber";
+import {useThree} from "@react-three/fiber";
 import {useControls} from "leva";
 
-import React, {useEffect} from "react";
+import {useRef} from "react";
 import Tile from "./Tile";
 import LOCATIONS from "./positions";
+import {Mesh} from "three";
 
-const SIZE = 50;
-const UNIT = SIZE / 71;
+const SIZE = 150 * 71;
+function scale(value: number) {
+  return value * (SIZE / 71);
+}
+
 const World = () => {
   const {camera} = useThree();
+  const meshRef = useRef<Mesh>();
+
   const [, set] = useControls(() => ({
     plotId: {
       value: 0,
@@ -18,28 +24,12 @@ const World = () => {
       onChange(id: number) {
         if (LOCATIONS[id]) {
           const [x, y] = LOCATIONS[id];
-          camera.position.set(x * UNIT, y * UNIT, camera.position.z);
+          camera.position.set(scale(x), scale(y), camera.position.z);
         }
       },
     },
-    x: {
-      value: camera.position.x,
-      onChange(valu) {
-        camera.position.x = valu;
-      },
-    },
-    y: {
-      value: camera.position.y,
-      onChange(valu) {
-        camera.position.y = valu;
-      },
-    },
-    z: camera.position.z,
   }));
-  useFrame(({camera}) => {
-    set({x: camera.position.x, y: camera.position.y, z: camera.position.z});
-  });
-
+  // Originally was going to use a seperate tile for each plot
   return (
     <group>
       <Tile size={SIZE} />
