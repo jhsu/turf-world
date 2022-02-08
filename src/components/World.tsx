@@ -120,13 +120,13 @@ const World = () => {
 };
 
 const TileTexture = () => {
-  const [texture] = useTexture(["/turf-auto-lg.png"]);
+  const [texture] = useTexture(["/turf-auto-lg-opt.png"]);
 
   return <plotSpriteMaterial attach="material" map={texture} />;
 };
 
 const ProgressiveTile = () => {
-  const [texture] = useTexture(["/turf-auto.png"]);
+  const [texture] = useTexture(["/turf-auto-opt.png"]);
   return (
     <Suspense fallback={<plotSpriteMaterial attach="material" map={texture} />}>
       <TileTexture />
