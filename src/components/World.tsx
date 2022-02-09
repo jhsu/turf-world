@@ -1,5 +1,12 @@
-import {Suspense, useLayoutEffect, useMemo, useRef} from "react";
-import {extend} from "@react-three/fiber";
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+} from "react";
+import {extend, useFrame, useThree} from "@react-three/fiber";
 
 import LOCATIONS from "./positions";
 import {
@@ -7,6 +14,7 @@ import {
   InstancedBufferAttribute,
   Texture,
   Vector2,
+  Vector3,
 } from "three";
 import {
   Instance,
@@ -66,8 +74,32 @@ declare global {
   }
 }
 
-const World = () => {
-  // const {camera} = useThree();
+interface WorldProps {
+  onSelectPlot(id: number): void;
+  plotId: number | null;
+}
+const World = ({onSelectPlot, plotId}: WorldProps) => {
+  const {camera} = useThree();
+
+  const camPos = useMemo<[number, number]>(() => {
+    if (plotId !== null) {
+      // get position and go to it
+      const [x, y] = LOCATIONS[plotId];
+      return [x * SIZE, y * SIZE];
+    }
+    return [0, 0];
+  }, [plotId]);
+
+  useEffect(() => {}, [camera, plotId]);
+
+  const vCam = useMemo(() => new Vector3(), []);
+
+  useFrame(({camera}) => {
+    let step = 0.1;
+    vCam.set(...camPos, 1);
+    camera.position.lerp(vCam, step);
+    camera.updateProjectionMatrix();
+  });
 
   const tokens = useMemo(() => {
     let ids = [];
@@ -95,6 +127,12 @@ const World = () => {
       );
     }
   }, [uvOffset]);
+  const onMouseOver = useCallback(() => {
+    document.body.style.cursor = "pointer";
+  }, []);
+  const onMouseLeave = useCallback(() => {
+    document.body.style.cursor = "auto";
+  }, []);
 
   return (
     <Instances limit={TOKENS}>
@@ -108,6 +146,9 @@ const World = () => {
       {tokens.map((plot) => (
         <Instance
           key={plot.id}
+          onPointerEnter={onMouseOver}
+          onPointerLeave={onMouseLeave}
+          onClick={() => onSelectPlot(plot.id)}
           position={
             plot.position
               ? [SIZE * plot.position[0], SIZE * plot.position[1], 0]
