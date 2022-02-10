@@ -22,8 +22,9 @@ import {
   shaderMaterial,
   useTexture,
 } from "@react-three/drei";
+import {useControls} from "leva";
 
-const SIZE = 150;
+const SIZE = 5;
 const TOKENS = 5041;
 
 const PlotSpriteMaterial = shaderMaterial(
@@ -51,11 +52,18 @@ varying vec2 vOffset;
 uniform sampler2D map;
 
 void main(){
-
   vec2 uv = vUv;
   vec2 off = vec2(vOffset.x / 71.0, vOffset.y / 71.0);
   uv = fract(uv * (1.0 / 71.0) + off);
   vec4 color = texture2D(map, uv);
+
+  vec4 blueScreen = vec4(0.568, 0.835, 0.933, 1);
+  // vec3 diff = color.rgb - blueScreen.rgb;
+
+  // if (diff.r < 0.0001 && diff.g < 0.0001 && diff.b < 0.0001) {
+  //   discard;
+  // }
+
   gl_FragColor = color;
 }
   `
@@ -90,13 +98,11 @@ const World = ({onSelectPlot, plotId}: WorldProps) => {
     return [0, 0];
   }, [plotId]);
 
-  useEffect(() => {}, [camera, plotId]);
-
   const vCam = useMemo(() => new Vector3(), []);
 
   useFrame(({camera}) => {
     let step = 0.1;
-    vCam.set(...camPos, 1);
+    vCam.set(...camPos, camera.position.z);
     camera.position.lerp(vCam, step);
     camera.updateProjectionMatrix();
   });
@@ -135,39 +141,39 @@ const World = ({onSelectPlot, plotId}: WorldProps) => {
   }, []);
 
   return (
-    <Instances limit={TOKENS}>
-      <planeBufferGeometry ref={ref} args={[SIZE, SIZE]} />
-      <Suspense
-        fallback={<meshPhongMaterial attach="material" color="#72c5db" />}
-      >
-        {/* <TileTexture /> */}
-        <ProgressiveTile />
-      </Suspense>
-      {tokens.map((plot) => (
-        <Instance
-          key={plot.id}
-          onPointerEnter={onMouseOver}
-          onPointerLeave={onMouseLeave}
-          onClick={() => onSelectPlot(plot.id)}
-          position={
-            plot.position
-              ? [SIZE * plot.position[0], SIZE * plot.position[1], 0]
-              : [0, 0, 0]
-          }
-        />
-      ))}
-    </Instances>
+    <>
+      <Instances limit={TOKENS} position={[0, 0, 0]}>
+        <planeBufferGeometry ref={ref} args={[SIZE, SIZE]} />
+
+        <Suspense
+          fallback={<meshPhongMaterial attach="material" color="#72c5db" />}
+        >
+          {/* <meshBasicMaterial attach="material" color="green" /> */}
+          {/* <TileTexture /> */}
+          <ProgressiveTile />
+        </Suspense>
+        {tokens.map((plot) => (
+          <Instance
+            key={plot.id}
+            onPointerEnter={onMouseOver}
+            onPointerLeave={onMouseLeave}
+            onClick={() => onSelectPlot(plot.id)}
+            position={[SIZE * plot.position[0], SIZE * plot.position[1], 0]}
+          />
+        ))}
+      </Instances>
+    </>
   );
 };
 
 const TileTexture = () => {
-  const [texture] = useTexture(["/turf-auto-lg-opt.png"]);
+  const [texture] = useTexture(["/turf-auto-lg-lossless.png"]);
 
   return <plotSpriteMaterial attach="material" map={texture} />;
 };
 
 const ProgressiveTile = () => {
-  const [texture] = useTexture(["/turf-auto-opt.png"]);
+  const [texture] = useTexture(["/turf-auto-opt-pngquant.png"]);
   return (
     <Suspense fallback={<plotSpriteMaterial attach="material" map={texture} />}>
       <TileTexture />

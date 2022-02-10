@@ -1,21 +1,13 @@
 import "./App.css";
 import {MapControls, OrbitControls} from "@react-three/drei";
-import {Canvas, useFrame} from "@react-three/fiber";
+import {Canvas} from "@react-three/fiber";
 
 import World from "./components/World";
 import {FormEvent, useState, WheelEvent} from "react";
 
-const ZoomCamera = ({zoom}: {zoom: number}) => {
-  useFrame(({camera}) => {
-    camera.zoom = zoom;
-  });
-  return null;
-};
-
 export default function App() {
   const [plotId, setPlotId] = useState<number | null>(null);
   const [showInfo, setShowInfo] = useState(false);
-  const handleWheel = (event: WheelEvent<HTMLElement>) => {};
   const onSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
@@ -24,21 +16,25 @@ export default function App() {
     );
   };
   return (
-    <div style={{width: "100%", height: "100%"}} onWheel={handleWheel}>
+    <div style={{width: "100%", height: "100%"}}>
       <Canvas
-        orthographic
+        // orthographic
         linear
         flat
-        camera={{position: [0, 0, 100], zoom: 1.5}}
+        camera={{position: [0, 0, 25]}}
       >
-        {/* <ZoomCamera zoom={zoom} /> */}
         {/* <OrbitControls /> */}
+
+        {/* <mesh position={[0, 0, 1]}>
+          <planeBufferGeometry attach="geometry" args={[10, 10]} />
+          <meshPhongMaterial attach="material" color="red" />
+        </mesh> */}
         {/* <MapControls
           up={[0, 0, 1]}
-          screenSpacePanning={true}
-          enableRotate={false}
+          // screenSpacePanning={true}
+          // enableRotate={false}
         /> */}
-        {/* <ambientLight intensity={1} position={[0, 0, 10]} /> */}
+        <ambientLight intensity={1} position={[0, 0, 10]} />
         <World
           plotId={plotId}
           onSelectPlot={(id) => {
@@ -46,8 +42,8 @@ export default function App() {
             setShowInfo(true);
           }}
         />
-        {/* <color attach="background" args={["#91D5E4"]} /> */}
-        <color attach="background" args={["#000000"]} />
+        <color attach="background" args={["#91D5E4"]} />
+        {/* <color attach="background" args={["#000000"]} /> */}
       </Canvas>
       <div
         style={{
