@@ -12,7 +12,6 @@ interface PlotRow {
   attributes: {trait_type: string; value: string}[];
 }
 const fetchPlots = async (trait: string, traitValue: string) => {
-  // select id, attributes from metadata where exists ( select TRUE from jsonb_array_elements(attributes) ids(x) where x->>'trait_type' = 'Plot Type' and x->>'value' = 'Mexican Restaurant');
   return await supabase
     .from<PlotRow>("metadata")
     .select("id, name, image")
@@ -32,6 +31,11 @@ const ASSOCIATIONS: AssocationDescriptor[] = [
     name: "Turf Transportation Authority",
     trait_type: "Plot Type",
     value: "Train Station",
+  },
+  {
+    name: "Association of Shrines",
+    trait_type: "Plot Type",
+    value: "Shrine",
   },
 ];
 

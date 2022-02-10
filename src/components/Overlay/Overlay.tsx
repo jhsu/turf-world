@@ -1,4 +1,5 @@
 import {gql, useQuery} from "@apollo/client";
+import * as Tabs from "@radix-ui/react-tabs";
 import {styled} from "@stitches/react";
 import {FormEvent, Suspense} from "react";
 import {useSnapshot} from "valtio";
@@ -38,8 +39,6 @@ const Loading = styled("div", {
     },
   },
 });
-
-import * as Tabs from "@radix-ui/react-tabs";
 
 const Tab = styled(Tabs.Trigger, {
   background: "none",
