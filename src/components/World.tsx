@@ -168,13 +168,13 @@ const World = ({onSelectPlot, plotId}: WorldProps) => {
 };
 
 const TileTexture = () => {
-  const [texture] = useTexture(["/turf-auto-lg-lossless.png"]);
+  const [texture] = useTexture(["/turf-auto-lg-opt.png"]);
 
   return <plotSpriteMaterial attach="material" map={texture} />;
 };
 
 const ProgressiveTile = () => {
-  const [texture] = useTexture(["/turf-auto-opt-pngquant.png"]);
+  const [texture] = useTexture(["/turf-auto-opt.png"]);
   return (
     <Suspense fallback={<plotSpriteMaterial attach="material" map={texture} />}>
       <TileTexture />
