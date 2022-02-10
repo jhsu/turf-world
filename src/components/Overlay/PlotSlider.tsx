@@ -3,10 +3,11 @@ import {styled} from "@stitches/react";
 import React from "react";
 import {useSnapshot} from "valtio";
 import {viewPlot} from "../../store";
+import {TokenButton} from "../Plots/TokenButton";
 
 const View = styled("div", {
   display: "grid",
-  gridTemplateColumns: "1fr 1fr 1fr",
+  gridTemplateColumns: "1fr 1fr 1fr 1fr",
   // maxHeight: 200,
   gap: 10,
   padding: 10,
@@ -16,7 +17,7 @@ const View = styled("div", {
 });
 
 const Root = styled(ScrollArea.Root, {
-  height: 200,
+  height: 160,
   overflowY: "scroll",
 });
 
@@ -26,7 +27,7 @@ const PlotItem = styled("div", {
   variants: {
     selected: {
       true: {
-        "& > img": {
+        "& > *": {
           // border: "2px solid red",
           boxShadow: "2px 2px 5px #cccccc",
         },
@@ -37,7 +38,7 @@ const PlotItem = styled("div", {
 
 interface PlotSliderProps {
   onSelect(id: string): void;
-  plots: {id: string; image: string}[];
+  plots: {name: string; id: string; image: string}[];
 }
 export const PlotSlider = ({onSelect, plots}: PlotSliderProps) => {
   const {plotId} = useSnapshot(viewPlot);
@@ -52,12 +53,13 @@ export const PlotSlider = ({onSelect, plots}: PlotSliderProps) => {
               onClick={() => onSelect(plot.id)}
               selected={strPlotId === plot?.id}
             >
-              <img
+              <TokenButton tokenId={plot.id} />
+              {/* <img
                 src={plot.image}
                 width="100px"
                 title={`Plot ${plot.id}`}
                 alt={`Image for token ${plot.id}`}
-              />
+              /> */}
             </PlotItem>
           ))}
         </View>
