@@ -59,7 +59,6 @@ const Overlay = () => {
                 <button
                   key={token.id}
                   onClick={() => {
-                    console.log("view ", token.id);
                     viewPlot.plotId = parseInt(token.id, 10);
                   }}
                 >
@@ -87,6 +86,20 @@ const Overlay = () => {
         />
         <button type="submit">jump to plot</button>
       </form>
+      <div>
+        <button
+          onClick={() => {
+            viewPlot.cameraZ = Math.min(viewPlot.cameraZ + 2, 30);
+          }}
+        >
+          -
+        </button>
+        <button
+          onClick={() => (viewPlot.cameraZ = Math.max(viewPlot.cameraZ - 2, 6))}
+        >
+          +
+        </button>
+      </div>
     </div>
   );
 };

@@ -23,6 +23,7 @@ import {
   useTexture,
 } from "@react-three/drei";
 import {useControls} from "leva";
+import {viewPlot} from "../store";
 
 const SIZE = 5;
 const TOKENS = 5041;
@@ -102,7 +103,7 @@ const World = ({onSelectPlot, plotId}: WorldProps) => {
 
   useFrame(({camera}) => {
     let step = 0.1;
-    vCam.set(...camPos, camera.position.z);
+    vCam.set(...camPos, viewPlot.cameraZ);
     camera.position.lerp(vCam, step);
     camera.updateProjectionMatrix();
   });
