@@ -1,7 +1,9 @@
 import {gql, useQuery} from "@apollo/client";
+import {styled} from "@stitches/react";
 import {FormEvent} from "react";
 import {useSnapshot} from "valtio";
 import {viewPlot} from "../../store";
+import {PlotSlider} from "./PlotSlider";
 
 const FETCH_OWNER_PLOTS = gql`
   query GetOwnerPlots($tokenID: String!) {
@@ -12,16 +14,33 @@ const FETCH_OWNER_PLOTS = gql`
         tokens {
           id
           tokenID
+          image
         }
       }
     }
   }
 `;
 
+const Loading = styled("div", {
+  borderRadius: 6,
+  height: 150,
+  backgroundColor: "#efefef",
+  marginBottom: 16,
+  variants: {
+    variant: {
+      text: {
+        display: "inline-block",
+        height: "auto",
+        color: "transparent",
+      },
+    },
+  },
+});
+
 const Overlay = () => {
   const {plotId, showDetails} = useSnapshot(viewPlot);
 
-  const {data: tokenData} = useQuery(FETCH_OWNER_PLOTS, {
+  const {data: tokenData, loading} = useQuery(FETCH_OWNER_PLOTS, {
     variables: {tokenID: plotId?.toString()},
     skip: plotId === null,
   });
@@ -38,7 +57,7 @@ const Overlay = () => {
       style={{
         bottom: 10,
         width: "100%",
-        maxWidth: 300,
+        maxWidth: 500,
         position: "absolute",
         background: "white",
         borderRadius: 6,
@@ -47,35 +66,41 @@ const Overlay = () => {
         transform: "translateX(-50%)",
       }}
     >
+      {loading && (
+        <>
+          <Loading variant="text">
+            <h2>loading plot</h2>
+          </Loading>
+          <Loading />
+        </>
+      )}
       {showDetails && tokenData && (
         <div>
-          <h2 style={{display: "inline-block", marginTop: 0, marginRight: 20}}>
-            Plot {plotId}
-          </h2>
+          <div>
+            <h2
+              style={{display: "inline-block", marginTop: 0, marginRight: 20}}
+            >
+              Plot {plotId}
+            </h2>
+
+            <a
+              href={`https://opensea.io/assets/0x55d89273143de3de00822c9271dbcbd9b44b44c6/${plotId}`}
+              target="_blank"
+              rel="noreferrer"
+              title="View plot on Opensea"
+            >
+              Opensea 🔗
+            </a>
+          </div>
           <div>
             <small>Owned by {tokenData.token?.owner?.id}</small>
             <div>
-              {tokenData?.token?.owner?.tokens?.map((token: {id: string}) => (
-                <button
-                  key={token.id}
-                  onClick={() => {
-                    viewPlot.plotId = parseInt(token.id, 10);
-                  }}
-                >
-                  Plot {token.id}
-                </button>
-              ))}
+              <PlotSlider
+                plots={tokenData?.token?.owner?.tokens ?? []}
+                onSelect={(id) => (viewPlot.plotId = parseInt(id, 10))}
+              />
             </div>
           </div>
-          <a
-            href={`https://opensea.io/assets/0x55d89273143de3de00822c9271dbcbd9b44b44c6/${plotId}`}
-            target="_blank"
-            rel="noreferrer"
-            title="View plot on Opensea"
-          >
-            Opensea 🔗
-          </a>
-          {/* <button onClick={() => setShowInfo(false)}>close</button> */}
         </div>
       )}
 
