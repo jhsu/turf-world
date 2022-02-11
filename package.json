@@ -17,6 +17,7 @@
     "@types/three": "^0.137.0",
     "graphql": "^16.3.0",
     "leva": "^0.9.18",
+    "phosphor-react": "^1.4.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-query": "^3.34.14",

@@ -1,6 +1,7 @@
 import {gql, useQuery} from "@apollo/client";
 import * as Tabs from "@radix-ui/react-tabs";
 import {styled} from "@stitches/react";
+import {HouseLine, UsersThree} from "phosphor-react";
 import {FormEvent, Suspense} from "react";
 import {useSnapshot} from "valtio";
 import {viewPlot} from "../../store";
@@ -45,6 +46,47 @@ const Tab = styled(Tabs.Trigger, {
   border: "none",
 });
 
+const TabNavRoot = styled(Tabs.Root, {
+  height: "100%",
+  display: "flex",
+  flexDirection: "row",
+  gap: 16,
+  color: "White",
+  "& a": {
+    color: "White",
+  },
+});
+const TabList = styled(Tabs.List, {
+  backgroundColor: "rgba(10,10,10,0.8)",
+  width: 100,
+  display: "flex",
+  flexDirection: "column",
+  gap: 16,
+  height: "100%",
+  padding: 16,
+  boxSizing: "border-box",
+});
+const TabTrigger = styled(Tabs.Trigger, {
+  flex: "1",
+  background: "none",
+  border: "none",
+  cursor: "pointer",
+});
+const TabContent = styled(Tabs.Content, {
+  backgroundColor: "rgba(10,10,10,0.8)",
+  width: 480,
+  overflow: "hidden",
+  padding: 16,
+  boxSizing: "border-box",
+});
+
+const Container = styled("div", {
+  position: "absolute",
+  left: 16,
+  bottom: 16,
+  height: 220,
+});
+
 const Overlay = () => {
   const {plotId, showDetails} = useSnapshot(viewPlot);
 
@@ -59,6 +101,80 @@ const Overlay = () => {
     viewPlot.plotId =
       parseInt(form.get("plotId")?.toString() ?? "", 10) ?? plotId;
   };
+
+  return (
+    <Container>
+      <TabNavRoot orientation="vertical" defaultValue="owner">
+        <TabList aria-label="Plot Navigation">
+          <TabTrigger value="associations">
+            <UsersThree weight="duotone" color="#ffffff" size={32} />
+          </TabTrigger>
+          <TabTrigger value="owner">
+            <HouseLine weight="duotone" color="#ffffff" size={32} />
+          </TabTrigger>
+        </TabList>
+
+        <TabContent value="owner">
+          {loading && (
+            <>
+              <Loading variant="text">
+                <h2>loading plot</h2>
+              </Loading>
+              <Loading />
+            </>
+          )}
+          {showDetails && tokenData && (
+            <div>
+              <div>
+                <h2
+                  style={{
+                    display: "inline-block",
+                    marginTop: 0,
+                    marginRight: 20,
+                  }}
+                >
+                  Plot {plotId}
+                </h2>
+
+                <a
+                  href={`https://opensea.io/assets/0x55d89273143de3de00822c9271dbcbd9b44b44c6/${plotId}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  title="View plot on Opensea"
+                >
+                  Opensea 🔗
+                </a>
+
+                <a
+                  href={tokenData.token?.image}
+                  target="_blank"
+                  rel="noreferrer"
+                  title="View higher definition image"
+                >
+                  Image
+                </a>
+              </div>
+              <div>
+                <small>Owned by {tokenData.token?.owner?.id}</small>
+                <div>
+                  <PlotSlider
+                    plots={tokenData?.token?.owner?.tokens ?? []}
+                    onSelect={(id) => (viewPlot.plotId = parseInt(id, 10))}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+        </TabContent>
+
+        <TabContent value="associations">
+          <Suspense fallback={null}>
+            <Associations />
+          </Suspense>
+        </TabContent>
+      </TabNavRoot>
+    </Container>
+  );
 
   return (
     <div
