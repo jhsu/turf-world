@@ -36,7 +36,7 @@ export default function App() {
           plotId={plotId}
           onSelectPlot={(id) => {
             viewPlot.plotId = id;
-            viewPlot.showDetails = true;
+            // viewPlot.showDetails = true;
           }}
         />
         <color attach="background" args={["#91D5E4"]} />

@@ -16,10 +16,7 @@ const View = styled("div", {
   },
 });
 
-const Root = styled(ScrollArea.Root, {
-  height: 160,
-  overflowY: "scroll",
-});
+const Root = styled(ScrollArea.Root, {});
 
 const PlotItem = styled("div", {
   cursor: "pointer",

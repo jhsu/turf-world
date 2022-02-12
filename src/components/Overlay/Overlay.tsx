@@ -1,8 +1,8 @@
 import {gql, useQuery} from "@apollo/client";
 import * as Tabs from "@radix-ui/react-tabs";
 import {styled} from "@stitches/react";
-import {HouseLine, UsersThree} from "phosphor-react";
-import {FormEvent, Suspense} from "react";
+import {ArrowFatLeft, HouseLine, UsersThree} from "phosphor-react";
+import {FormEvent, Suspense, useState} from "react";
 import {useSnapshot} from "valtio";
 import {viewPlot} from "../../store";
 import {Associations} from "../Associations/Associations";
@@ -71,13 +71,38 @@ const TabTrigger = styled(Tabs.Trigger, {
   background: "none",
   border: "none",
   cursor: "pointer",
+  // "&[data-state=active]::after": {
+  //   width: 16,
+  //   height: 1,
+  //   borderBottom: "1px solid white",
+  //   content: "",
+  // },
 });
 const TabContent = styled(Tabs.Content, {
   backgroundColor: "rgba(10,10,10,0.8)",
   width: 480,
   overflow: "hidden",
+  // padding: 16,
+  boxSizing: "border-box",
+  variants: {
+    collapsed: {
+      true: {
+        width: "auto",
+      },
+    },
+  },
+});
+
+const TabContentActions = styled("div", {
+  height: "100%",
+  width: 64,
   padding: 16,
   boxSizing: "border-box",
+  backgroundColor: "rgba(10,10,10,0.8)",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "flex-end",
 });
 
 const Container = styled("div", {
@@ -85,6 +110,32 @@ const Container = styled("div", {
   left: 16,
   bottom: 16,
   height: 220,
+});
+
+const CollapseArrow = styled(ArrowFatLeft, {
+  cursor: "pointer",
+  variants: {
+    collapsed: {
+      true: {
+        transform: "rotate(180deg)",
+      },
+    },
+  },
+});
+
+const RotatedPlot = styled("div", {
+  whiteSpace: "nowrap",
+  display: "flex",
+  flexDirection: "column",
+  justifyContent: "flex-end",
+  marginBottom: 64,
+  flex: 1,
+  "& > span": {
+    display: "inline-block",
+    transformOrigin: "center",
+    transform: "rotate(-90deg)",
+    fontSize: 24,
+  },
 });
 
 const Overlay = () => {
@@ -114,57 +165,80 @@ const Overlay = () => {
           </TabTrigger>
         </TabList>
 
-        <TabContent value="owner">
-          {loading && (
+        <TabContent value="owner" collapsed={!showDetails}>
+          {/* {loading && (
             <>
               <Loading variant="text">
                 <h2>loading plot</h2>
               </Loading>
               <Loading />
             </>
-          )}
-          {showDetails && tokenData && (
-            <div>
-              <div>
-                <h2
-                  style={{
-                    display: "inline-block",
-                    marginTop: 0,
-                    marginRight: 20,
-                  }}
-                >
-                  Plot {plotId}
-                </h2>
-
-                <a
-                  href={`https://opensea.io/assets/0x55d89273143de3de00822c9271dbcbd9b44b44c6/${plotId}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  title="View plot on Opensea"
-                >
-                  Opensea 🔗
-                </a>
-
-                <a
-                  href={tokenData.token?.image}
-                  target="_blank"
-                  rel="noreferrer"
-                  title="View higher definition image"
-                >
-                  Image
-                </a>
-              </div>
-              <div>
-                <small>Owned by {tokenData.token?.owner?.id}</small>
+          )} */}
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "flex-end",
+              height: "100%",
+            }}
+          >
+            {showDetails && tokenData && (
+              <div style={{flex: 1, padding: 16}}>
                 <div>
-                  <PlotSlider
-                    plots={tokenData?.token?.owner?.tokens ?? []}
-                    onSelect={(id) => (viewPlot.plotId = parseInt(id, 10))}
-                  />
+                  <h2
+                    style={{
+                      display: "inline-block",
+                      marginTop: 0,
+                      marginRight: 20,
+                    }}
+                  >
+                    Plot {plotId}
+                  </h2>
+
+                  <a
+                    href={`https://opensea.io/assets/0x55d89273143de3de00822c9271dbcbd9b44b44c6/${plotId}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    title="View plot on Opensea"
+                  >
+                    Opensea 🔗
+                  </a>
+
+                  <a
+                    href={tokenData.token?.image}
+                    target="_blank"
+                    rel="noreferrer"
+                    title="View higher definition image"
+                  >
+                    Image
+                  </a>
+                </div>
+                <div>
+                  <small>Owned by {tokenData.token?.owner?.id}</small>
+                  <div>
+                    <PlotSlider
+                      plots={tokenData?.token?.owner?.tokens ?? []}
+                      onSelect={(id) => (viewPlot.plotId = parseInt(id, 10))}
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
+            <TabContentActions>
+              {!showDetails && (
+                <RotatedPlot>
+                  <span>Plot #{plotId}</span>
+                </RotatedPlot>
+              )}
+              <CollapseArrow
+                weight="duotone"
+                color="#ffffff"
+                size={32}
+                collapsed={!showDetails}
+                onClick={() => (viewPlot.showDetails = !showDetails)}
+              />
+            </TabContentActions>
+          </div>
         </TabContent>
 
         <TabContent value="associations">
