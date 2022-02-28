@@ -4,6 +4,7 @@ import { Canvas } from "@react-three/fiber";
 import { useSnapshot } from "valtio";
 import World from "~/components/World/World";
 import { viewPlot } from "~/store";
+import Overlay from "~/components/Overlay";
 
 const Home: NextPage = () => {
   const snap = useSnapshot(viewPlot);
@@ -17,6 +18,7 @@ const Home: NextPage = () => {
         <ambientLight intensity={1} position={[0, 0, 10]} />
         <color attach="background" args={["#91D5E4"]} />
       </Canvas>
+      <Overlay />
     </div>
   );
 };
