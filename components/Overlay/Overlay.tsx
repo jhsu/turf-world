@@ -1,12 +1,13 @@
-import { gql, useQuery } from "@apollo/client";
-import { useSnapshot } from "valtio";
+import {gql, useQuery} from "@apollo/client";
+import {useSnapshot} from "valtio";
 import * as Tabs from "@radix-ui/react-tabs";
-import { HouseLine, UsersThree } from "phosphor-react";
-import { styled } from "@stitches/react";
-import { FormEvent, Suspense } from "react";
+import {HouseLine, UsersThree} from "phosphor-react";
+import {styled} from "@stitches/react";
+import {FormEvent, Suspense} from "react";
 
-import { viewPlot } from "~/store";
+import {viewPlot} from "~/store";
 import Associations from "~/components/Associations";
+import Address from "../Address/Address";
 
 const FETCH_OWNER_PLOTS = gql`
   query GetOwnerPlots($tokenID: String!) {
@@ -48,6 +49,7 @@ const Tab = styled(Tabs.Trigger, {
 
 const TabNavRoot = styled(Tabs.Root, {
   height: "100%",
+  width: "100%",
   display: "flex",
   flexDirection: "row",
   gap: 16,
@@ -81,23 +83,27 @@ const TabTrigger = styled(Tabs.Trigger, {
 });
 const TabContent = styled(Tabs.Content, {
   backgroundColor: "rgba(10,10,10,0.8)",
-  width: 480,
+  maxWidth: 480,
   overflow: "hidden",
-  padding: 16,
+  padding: "$3",
   boxSizing: "border-box",
+  flex: 1,
 });
 
 const Container = styled("div", {
   position: "absolute",
-  left: 16,
-  bottom: 16,
+  padding: "$3",
+  boxSizing: "border-box",
+  bottom: 0,
+  left: 0,
+  width: "100%",
 });
 
 const Overlay = () => {
-  const { plotId, showDetails } = useSnapshot(viewPlot);
+  const {plotId, showDetails} = useSnapshot(viewPlot);
 
-  const { data: tokenData, loading } = useQuery(FETCH_OWNER_PLOTS, {
-    variables: { tokenID: plotId?.toString() },
+  const {data: tokenData, loading} = useQuery(FETCH_OWNER_PLOTS, {
+    variables: {tokenID: plotId?.toString()},
     skip: plotId === null,
   });
 
@@ -153,13 +159,8 @@ const Overlay = () => {
                 </a>
               </div>
               <div>
-                <small>Owned by {tokenData.token?.owner?.id}</small>
-                <div>
-                  {/* <PlotSlider
-                    plots={tokenData?.token?.owner?.tokens ?? []}
-                    onSelect={(id) => (viewPlot.plotId = parseInt(id, 10))}
-                  /> */}
-                </div>
+                <small>Owned by</small>
+                <Address address={tokenData.token?.owner?.id} />
               </div>
             </div>
           )}
