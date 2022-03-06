@@ -1,0 +1,9 @@
+{
+	"name": "Turf World",
+	"short_name": "Turf World",
+	"short_url": "/",
+	"display": "standalone",
+	"background_color": "#508958",
+	"theme_color": "#88CDDB",
+	"orientation": "portrait-primary"
+}

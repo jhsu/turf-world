@@ -19,7 +19,7 @@ interface ViewPlotSetters {
 }
 export const viewPlot = proxyWithComputed<ViewPlot, ViewPlotSetters>(
   {
-    selectedPlotId: null,
+    selectedPlotId: 0,
     showDetails: true,
     cameraZ: 25,
     cameraPosition: [0, 0],
