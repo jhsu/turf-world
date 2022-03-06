@@ -28,6 +28,9 @@ const Home: NextPage = () => {
       onWheel: ({direction: [, y]}) => {
         viewPlot.z += y === -1 ? -2 : 2;
       },
+      onPinch: ({offset: [scale]}) => {
+        viewPlot.z *= scale;
+      },
     },
     {
       drag: {
