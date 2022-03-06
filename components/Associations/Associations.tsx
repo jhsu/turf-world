@@ -1,15 +1,15 @@
-import { styled } from "@stitches/react";
-import { useState } from "react";
-import { useQuery } from "react-query";
-import { viewPlot } from "~/store";
-import { supabase } from "~/store/supabase";
-// import {PlotButton} from "../Plots/TokenButton";
+import {styled} from "@stitches/react";
+import {useState} from "react";
+import {useQuery} from "react-query";
+import {viewPlot} from "~/store";
+import {supabase} from "~/store/supabase";
+import {PlotButton} from "~/components/Plot";
 
 interface PlotRow {
   id: number;
   image: string;
   name: string;
-  attributes: { trait_type: string; value: string }[];
+  attributes: {trait_type: string; value: string}[];
 }
 const fetchPlots = async (trait: string, traitValue: string) => {
   return await supabase
@@ -17,7 +17,7 @@ const fetchPlots = async (trait: string, traitValue: string) => {
     .select("id, name, image")
     .contains(
       "attributes",
-      JSON.stringify([{ value: traitValue, trait_type: trait }])
+      JSON.stringify([{value: traitValue, trait_type: trait}])
     );
 };
 
@@ -48,30 +48,29 @@ const AssociationInfo = ({
   traitType: string;
   traitValue: string;
 }) => {
-  const { data, error } = useQuery(["association", traitType, traitValue], () =>
+  const {data, error} = useQuery(["association", traitType, traitValue], () =>
     fetchPlots(traitType, traitValue)
   );
 
   return (
-    <div>
+    <div style={{flex: 1, display: "flex", flexDirection: "column"}}>
       <h2>{name}</h2>
       <div
         style={{
-          maxHeight: 120,
           overflow: "auto",
           display: "grid",
           gridTemplateColumns: "1fr 1fr",
           rowGap: 10,
           columnGap: 8,
+          flex: 1,
         }}
       >
         {data?.data?.map((plot) => (
-          <></>
-          // <PlotButton
-          //   tokenId={plot.id}
-          //   name={plot.name}
-          //   onClick={() => (viewPlot.plotId = plot.id)}
-          // />
+          <PlotButton
+            key={plot.id}
+            tokenId={plot.id}
+            onClick={() => (viewPlot.plotId = plot.id)}
+          />
         ))}
       </div>
     </div>
@@ -97,7 +96,7 @@ const Associations = () => {
   return (
     <div>
       {assoc ? (
-        <div>
+        <div style={{display: "flex", flexDirection: "column"}}>
           <button onClick={() => setAssoc(null)}>&larr; back</button>
           <AssociationInfo
             name={assoc.name}
