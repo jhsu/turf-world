@@ -83,7 +83,6 @@ const TabTrigger = styled(Tabs.Trigger, {
 });
 const TabContent = styled(Tabs.Content, {
   backgroundColor: "rgba(10,10,10,0.8)",
-  maxWidth: 480,
   overflow: "hidden",
   padding: "$3",
   boxSizing: "border-box",
@@ -97,6 +96,14 @@ const Container = styled("div", {
   bottom: 0,
   left: 0,
   width: "100%",
+  maxWidth: 540,
+});
+
+const PlotActions = styled("div", {
+  display: "flex",
+  flexDirection: "row",
+  gap: "$2",
+  marginBottom: "$2",
 });
 
 const Overlay = () => {
@@ -130,33 +137,25 @@ const Overlay = () => {
           {showDetails && tokenData && (
             <div>
               <div>
-                <h2
-                  style={{
-                    display: "inline-block",
-                    marginTop: 0,
-                    marginRight: 20,
-                  }}
-                >
-                  Plot {plotId}
-                </h2>
-
-                <a
-                  href={`https://opensea.io/assets/0x55d89273143de3de00822c9271dbcbd9b44b44c6/${plotId}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  title="View plot on Opensea"
-                >
-                  Opensea 🔗
-                </a>
-
-                <a
-                  href={tokenData.token?.image}
-                  target="_blank"
-                  rel="noreferrer"
-                  title="View higher definition image"
-                >
-                  Image
-                </a>
+                <h2>Plot {plotId}</h2>
+                <PlotActions>
+                  <a
+                    href={`https://opensea.io/assets/0x55d89273143de3de00822c9271dbcbd9b44b44c6/${plotId}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    title="View plot on Opensea"
+                  >
+                    Opensea🔗
+                  </a>
+                  <a
+                    href={tokenData.token?.image}
+                    target="_blank"
+                    rel="noreferrer"
+                    title="View higher definition image"
+                  >
+                    Image
+                  </a>
+                </PlotActions>
               </div>
               <div>
                 <small>Owned by</small>

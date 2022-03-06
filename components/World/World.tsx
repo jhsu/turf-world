@@ -1,25 +1,26 @@
-import {Suspense, useCallback, useLayoutEffect, useMemo, useRef} from "react";
+import {Suspense, useCallback, useEffect, useMemo, useRef} from "react";
 import {
-  BufferGeometry,
-  InstancedBufferAttribute,
+  InstancedMesh,
   Object3D,
   Texture,
   Vector2,
   Vector3 as Vec3,
 } from "three";
-import {extend, useFrame, Vector3} from "@react-three/fiber";
 import {
-  Instance,
-  Instances,
-  shaderMaterial,
-  useTexture,
-} from "@react-three/drei";
+  extend,
+  ThreeEvent,
+  useFrame,
+  useThree,
+  Vector3,
+} from "@react-three/fiber";
+import {shaderMaterial, useTexture} from "@react-three/drei";
 
 import {viewPlot} from "~/store";
 import LOCATIONS from "./positions";
 
 const SIZE = 5;
 const TOKENS = 5041;
+const STEP = 0.1;
 
 const PlotSpriteMaterial = shaderMaterial(
   {map: new Texture(), offset: new Vector2(0, 0)},
@@ -76,68 +77,21 @@ declare global {
   }
 }
 
-// TODO: use https://codesandbox.io/s/grass-shader-5xho4?file=/src/Grass.js
-interface PlotInstanceProps extends Record<string, any> {
-  selected?: boolean;
-  position: [number, number, number];
-  plotId: number;
-  onSelect(plotId: number | null): void;
-}
-const PlotInstance = ({
-  selected,
-  plotId,
-  onSelect,
-  position,
-  ...props
-}: PlotInstanceProps) => {
-  const newPosition: [number, number, number] = useMemo(
-    () => (selected ? [position[0], position[1], position[2] + 10] : position),
-    [selected, position]
-  );
-  const inst = useRef<Object3D>(null);
-  const targetPos = useMemo(() => new Vec3(...newPosition), [newPosition]);
-  const onClick = useCallback(() => {
-    onSelect(selected ? null : plotId);
-  }, [selected, plotId, onSelect]);
-
-  useFrame(() => {
-    if (inst.current) {
-      targetPos.set(...newPosition);
-      inst.current.position.lerp(targetPos, 0.1);
-    }
-  });
-  return (
-    <Instance
-      {...props}
-      position={position}
-      ref={inst}
-      // onClick={onClick}
-    />
-  );
-};
-
-let STEP = 0.1;
 interface WorldProps {
   onSelectPlot(id: number): void;
   plotId: number | null;
 }
 const World = ({onSelectPlot, plotId}: WorldProps) => {
-  const camPos = useMemo<[number, number] | null>(() => {
-    if (plotId !== null) {
-      // get position and go to it
-      const [x, y] = LOCATIONS[plotId];
-      return [x * SIZE, y * SIZE];
-    }
-    return null;
-  }, [plotId]);
+  const {viewport} = useThree();
+  useEffect(() => {
+    viewPlot.viewport = viewport;
+  }, [viewport]);
 
   const vCam = useMemo(() => new Vec3(...LOCATIONS[0], viewPlot.cameraZ), []);
-
   useFrame(({camera}) => {
+    const camPos = viewPlot.cameraLocation;
     if (camPos) {
-      vCam.set(...camPos, viewPlot.cameraZ);
-    } else {
-      vCam.setZ(viewPlot.cameraZ);
+      vCam.set(...camPos);
     }
     camera.position.lerp(vCam, STEP);
     camera.updateProjectionMatrix();
@@ -151,7 +105,37 @@ const World = ({onSelectPlot, plotId}: WorldProps) => {
     return ids;
   }, []);
 
-  const ref = useRef<BufferGeometry>(null);
+  return (
+    <>
+      <InstancedMeshTiles
+        tokens={tokens}
+        plotId={plotId}
+        onSelect={onSelectPlot}
+      />
+    </>
+  );
+};
+
+interface InstancedMeshTilesProps {
+  plotId: number | null;
+  onSelect: (id: number) => void;
+  tokens: {position: [number, number]; id: number}[];
+}
+const InstancedMeshTiles = ({
+  tokens,
+  plotId,
+  onSelect,
+}: InstancedMeshTilesProps) => {
+  const meshRef = useRef<InstancedMesh>();
+  const positions: number[] = useMemo(
+    () =>
+      tokens.reduce((list, plot) => {
+        list.push(SIZE * plot.position[0], SIZE * plot.position[1], 0);
+        return list;
+      }, [] as number[]),
+    [tokens]
+  );
+
   const uvOffset = useMemo(() => {
     let offsets = [];
     for (let i = 0; i < TOKENS; i++) {
@@ -161,46 +145,45 @@ const World = ({onSelectPlot, plotId}: WorldProps) => {
     }
     return offsets;
   }, []);
-  useLayoutEffect(() => {
-    if (ref.current) {
-      ref.current.setAttribute(
-        "aOffset",
-        new InstancedBufferAttribute(new Float32Array(uvOffset), 2)
-      );
+  useEffect(() => {
+    if (!meshRef.current) return;
+    for (let i = 0; i < TOKENS; i++) {
+      const start = i * 3;
+      const dum = new Object3D();
+      dum.position.copy(new Vec3(...positions.slice(start, start + 2)));
+      dum.updateMatrix();
+      meshRef.current.setMatrixAt(i, dum.matrix);
     }
-  }, [uvOffset]);
-  const positions: [number, number, number][] = useMemo(
-    () =>
-      tokens.map((plot) => [
-        SIZE * plot.position[0],
-        SIZE * plot.position[1],
-        0,
-      ]),
-    [tokens]
+  }, [positions]);
+  const onClick = useCallback(
+    (e: ThreeEvent<MouseEvent>) => {
+      if (e.instanceId !== undefined) {
+        onSelect(e.instanceId);
+      }
+    },
+    [onSelect]
   );
 
   return (
-    <>
-      <Instances limit={TOKENS} position={[0, 0, 0]}>
-        <planeBufferGeometry ref={ref} args={[SIZE, SIZE]} />
+    <instancedMesh
+      ref={meshRef}
+      args={[undefined, undefined, TOKENS]}
+      onClick={onClick}
+    >
+      <planeGeometry args={[SIZE, SIZE]}>
+        <instancedBufferAttribute
+          attachObject={["attributes", "aOffset"]}
+          args={[new Float32Array(uvOffset), 2]}
+        />
+      </planeGeometry>
 
-        <Suspense
-          fallback={<meshPhongMaterial attach="material" color="#72c5db" />}
-        >
-          {/* <meshBasicMaterial attach="material" color="green" /> */}
-          <ProgressiveTile />
-        </Suspense>
-        {tokens.map((plot, idx) => (
-          <PlotInstance
-            key={plot.id}
-            selected={plot.id === plotId}
-            plotId={plot.id}
-            onSelect={onSelectPlot}
-            position={positions[idx]}
-          />
-        ))}
-      </Instances>
-    </>
+      <Suspense
+        fallback={<meshPhongMaterial attach="material" color="#72c5db" />}
+      >
+        {/* <meshBasicMaterial attach="material" color="green" /> */}
+        <ProgressiveTile />
+      </Suspense>
+    </instancedMesh>
   );
 };
 
