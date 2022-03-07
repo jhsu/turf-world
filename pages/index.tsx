@@ -8,6 +8,7 @@ import Overlay from "~/components/Overlay";
 import {useGesture, useWheel} from "@use-gesture/react";
 import {Perf} from "r3f-perf";
 import {useCallback, useRef} from "react";
+import {ApolloProvider, useApolloClient} from "@apollo/client";
 
 const Home: NextPage = () => {
   const {plotId} = useSnapshot(viewPlot);
@@ -62,16 +63,21 @@ const Home: NextPage = () => {
     viewPlot.plotId = id;
   }, []);
 
+  const client = useApolloClient();
+
   return (
     <div
       ref={dragRef}
       style={{width: "100%", height: "100%", touchAction: "none"}}
       {...bind()}
     >
-      <Canvas linear camera={{position: [0, 0, 25]}}>
-        {/* <Perf /> */}
-        <World plotId={plotId} onSelectPlot={onSelect} />
-        <color attach="background" args={["#508958"]} />
+      <Canvas linear flat camera={{position: [0, 0, 25]}}>
+        <ApolloProvider client={client}>
+          {/* <Perf /> */}
+          <World plotId={plotId} onSelectPlot={onSelect} />
+
+          <color attach="background" args={["#508958"]} />
+        </ApolloProvider>
       </Canvas>
       <Overlay />
     </div>

@@ -51,7 +51,7 @@ export const viewPlot = proxyWithComputed<ViewPlot, ViewPlotSetters>(
     z: {
       get: (snap) => snap.cameraZ,
       set: (state, newValue: number) => {
-        state.cameraZ = Math.max(Math.min(80, newValue), 12);
+        state.cameraZ = Math.max(Math.min(120, newValue), 12);
       },
     },
   }

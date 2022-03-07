@@ -17,13 +17,14 @@ import {shaderMaterial, useTexture} from "@react-three/drei";
 
 import {viewPlot} from "~/store";
 import LOCATIONS from "./positions";
+import {PlotDetails} from "../Overlay";
 
 const SIZE = 5;
 const TOKENS = 5041;
 const STEP = 0.1;
 
 const PlotSpriteMaterial = shaderMaterial(
-  {map: new Texture(), offset: new Vector2(0, 0)},
+  {map: new Texture(), offset: new Vector2(0, 0), selected: false},
   `
 attribute vec2 aOffset;
 varying vec2 vUv;
@@ -45,6 +46,7 @@ void main()	{
 varying vec2 vUv;
 varying vec2 vOffset;
 uniform sampler2D map;
+// uniform selected bool;
 
 void main(){
   vec2 uv = vUv;
@@ -67,6 +69,7 @@ extend({PlotSpriteMaterial});
 type PlotSpriteImpl = {
   map: Texture;
   aOffset?: Vector2;
+  selected?: boolean;
 } & JSX.IntrinsicElements["shaderMaterial"];
 
 declare global {
@@ -112,6 +115,7 @@ const World = ({onSelectPlot, plotId}: WorldProps) => {
         plotId={plotId}
         onSelect={onSelectPlot}
       />
+      {plotId !== null && <PlotDetails plotId={plotId} />}
     </>
   );
 };
@@ -127,6 +131,7 @@ const InstancedMeshTiles = ({
   onSelect,
 }: InstancedMeshTilesProps) => {
   const meshRef = useRef<InstancedMesh>();
+
   const positions: number[] = useMemo(
     () =>
       tokens.reduce((list, plot) => {
@@ -145,6 +150,7 @@ const InstancedMeshTiles = ({
     }
     return offsets;
   }, []);
+
   useEffect(() => {
     if (!meshRef.current) return;
     for (let i = 0; i < TOKENS; i++) {
@@ -155,6 +161,13 @@ const InstancedMeshTiles = ({
       meshRef.current.setMatrixAt(i, dum.matrix);
     }
   }, [positions]);
+
+  // useFrame(() => {
+  //   if (meshRef.current && viewPlot.plotId !== null) {
+  //     // update instance of plotId to have selected be true
+  //   }
+  // });
+
   const onClick = useCallback(
     (e: ThreeEvent<MouseEvent>) => {
       if (e.instanceId !== undefined) {

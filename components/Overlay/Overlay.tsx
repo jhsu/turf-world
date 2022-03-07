@@ -26,27 +26,6 @@ const FETCH_OWNER_PLOTS = gql`
   }
 `;
 
-const Loading = styled("div", {
-  borderRadius: 6,
-  height: 150,
-  backgroundColor: "#efefef",
-  marginBottom: 16,
-  variants: {
-    variant: {
-      text: {
-        display: "inline-block",
-        height: "auto",
-        color: "transparent",
-      },
-    },
-  },
-});
-
-const Tab = styled(Tabs.Trigger, {
-  background: "none",
-  border: "none",
-});
-
 const TabNavRoot = styled(Tabs.Root, {
   height: "100%",
   width: "100%",
@@ -87,6 +66,12 @@ const TabContent = styled(Tabs.Content, {
   padding: "$3",
   boxSizing: "border-box",
   flex: 1,
+  variants: {
+    loading: {
+      true: {},
+      false: {},
+    },
+  },
 });
 
 const Container = styled("div", {
@@ -109,7 +94,11 @@ const PlotActions = styled("div", {
 const Overlay = () => {
   const {plotId, showDetails} = useSnapshot(viewPlot);
 
-  const {data: tokenData, loading} = useQuery(FETCH_OWNER_PLOTS, {
+  const {
+    data: tokenData,
+    previousData,
+    loading,
+  } = useQuery(FETCH_OWNER_PLOTS, {
     variables: {tokenID: plotId?.toString()},
     skip: plotId === null,
   });
@@ -120,6 +109,8 @@ const Overlay = () => {
     viewPlot.plotId =
       parseInt(form.get("plotId")?.toString() ?? "", 10) ?? plotId;
   };
+
+  const data = tokenData ?? previousData;
 
   return (
     <Container>
@@ -133,8 +124,8 @@ const Overlay = () => {
           </TabTrigger>
         </TabList>
 
-        <TabContent value="owner">
-          {showDetails && tokenData && (
+        <TabContent value="owner" loading={loading}>
+          {showDetails && data && (
             <div>
               <div>
                 <h2>Plot {plotId}</h2>
@@ -148,7 +139,7 @@ const Overlay = () => {
                     Opensea🔗
                   </a>
                   <a
-                    href={tokenData.token?.image}
+                    href={data.token?.image}
                     target="_blank"
                     rel="noreferrer"
                     title="View higher definition image"
@@ -159,7 +150,7 @@ const Overlay = () => {
               </div>
               <div>
                 <small>Owned by</small>
-                <Address address={tokenData.token?.owner?.id} />
+                <Address address={data.token?.owner?.id} />
               </div>
             </div>
           )}
