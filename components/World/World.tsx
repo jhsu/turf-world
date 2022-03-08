@@ -156,8 +156,10 @@ const InstancedMeshTiles = ({
       if (plotId === null) {
         cFactors.push(1);
       } else {
-        if (i === plotId || neighbors.includes(i)) {
+        if (i === plotId) {
           cFactors.push(1);
+        } else if (neighbors.includes(i)) {
+          cFactors.push(0.75);
         } else {
           cFactors.push(0.35);
         }
