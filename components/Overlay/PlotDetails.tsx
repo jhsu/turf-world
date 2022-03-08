@@ -18,7 +18,6 @@ async function fetchImage(url: string) {
   const response = await fetch(url);
   const buffer = await response.arrayBuffer();
   const img = UPNG.decode(buffer);
-  console.log(frames);
   return img;
 }
 
