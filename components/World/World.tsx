@@ -6,13 +6,7 @@ import {
   Vector2,
   Vector3 as Vec3,
 } from "three";
-import {
-  extend,
-  ThreeEvent,
-  useFrame,
-  useThree,
-  Vector3,
-} from "@react-three/fiber";
+import {extend, ThreeEvent, useFrame, useThree} from "@react-three/fiber";
 import {shaderMaterial, useTexture} from "@react-three/drei";
 
 import {viewPlot} from "~/store";
@@ -24,15 +18,18 @@ const TOKENS = 5041;
 const STEP = 0.1;
 
 const PlotSpriteMaterial = shaderMaterial(
-  {map: new Texture(), offset: new Vector2(0, 0), selected: false},
+  {map: new Texture(), cFactor: 1},
   `
 attribute vec2 aOffset;
+attribute float cFactor;
 varying vec2 vUv;
 varying vec2 vOffset;
+varying float vFactor;
 
 void main()	{
   vUv = uv;
   vOffset = aOffset;
+  vFactor = cFactor;
   vec4 mvPosition = vec4(position, 1.0);
   // Instance support
   #ifdef USE_INSTANCING
@@ -45,8 +42,8 @@ void main()	{
   `
 varying vec2 vUv;
 varying vec2 vOffset;
+varying float vFactor;
 uniform sampler2D map;
-// uniform selected bool;
 
 void main(){
   vec2 uv = vUv;
@@ -54,13 +51,16 @@ void main(){
   uv = fract(uv * (1.0 / 71.0) + off);
   vec4 color = texture2D(map, uv);
 
-  vec4 blueScreen = vec4(0.568, 0.835, 0.933, 1);
+  // vec4 blueScreen = vec4(0.568, 0.835, 0.933, 1);
   // vec3 diff = color.rgb - blueScreen.rgb;
 
   // if (diff.r < 0.0001 && diff.g < 0.0001 && diff.b < 0.0001) {
   //   discard;
   // }
 
+  color.r = color.r * vFactor;
+  color.g = color.g * vFactor;
+  color.b = color.b * vFactor;
   gl_FragColor = color;
 }
   `
@@ -69,7 +69,7 @@ extend({PlotSpriteMaterial});
 type PlotSpriteImpl = {
   map: Texture;
   aOffset?: Vector2;
-  selected?: boolean;
+  cFactor?: number;
 } & JSX.IntrinsicElements["shaderMaterial"];
 
 declare global {
@@ -78,6 +78,22 @@ declare global {
       plotSpriteMaterial: PlotSpriteImpl;
     }
   }
+}
+
+function findNeighbors(plotId: number): number[] {
+  const [x, y] = LOCATIONS[plotId];
+  const neighbors: number[] = [];
+  for (let i = -1; i <= 1; i++) {
+    for (let j = -1; j <= 1; j++) {
+      const found = Object.entries(LOCATIONS).find(
+        ([, [x2, y2]]) => x2 === x + i && y2 === y + j
+      );
+      if (found) {
+        neighbors.push(parseInt(found[0], 10));
+      }
+    }
+  }
+  return neighbors;
 }
 
 interface WorldProps {
@@ -132,6 +148,24 @@ const InstancedMeshTiles = ({
 }: InstancedMeshTilesProps) => {
   const meshRef = useRef<InstancedMesh>();
 
+  const dimFactors = useMemo(() => {
+    const cFactors = [];
+    const neighbors = plotId !== null ? findNeighbors(plotId) : [];
+
+    for (let i = 0; i < TOKENS; i++) {
+      if (plotId === null) {
+        cFactors.push(1);
+      } else {
+        if (i === plotId || neighbors.includes(i)) {
+          cFactors.push(1);
+        } else {
+          cFactors.push(0.35);
+        }
+      }
+    }
+    return cFactors;
+  }, [plotId]);
+
   const positions: number[] = useMemo(
     () =>
       tokens.reduce((list, plot) => {
@@ -162,12 +196,6 @@ const InstancedMeshTiles = ({
     }
   }, [positions]);
 
-  // useFrame(() => {
-  //   if (meshRef.current && viewPlot.plotId !== null) {
-  //     // update instance of plotId to have selected be true
-  //   }
-  // });
-
   const onClick = useCallback(
     (e: ThreeEvent<MouseEvent>) => {
       if (e.instanceId !== undefined) {
@@ -188,6 +216,10 @@ const InstancedMeshTiles = ({
           attachObject={["attributes", "aOffset"]}
           args={[new Float32Array(uvOffset), 2]}
         />
+        <instancedBufferAttribute
+          attachObject={["attributes", "cFactor"]}
+          args={[new Float32Array(dimFactors), 1]}
+        />
       </planeGeometry>
 
       <Suspense
@@ -202,7 +234,6 @@ const InstancedMeshTiles = ({
 
 const TileTexture = () => {
   const [texture] = useTexture(["/images/turf-auto-lg-opt.png"]);
-
   return <plotSpriteMaterial attach="material" map={texture} />;
 };
 

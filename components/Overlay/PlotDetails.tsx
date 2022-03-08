@@ -3,6 +3,7 @@ import {OrthographicCamera, useCamera, useTexture} from "@react-three/drei";
 import {createPortal, useFrame, useThree} from "@react-three/fiber";
 import {forwardRef, Suspense, useCallback, useMemo, useRef} from "react";
 import {Camera, Material, Mesh, Scene} from "three";
+import UPNG from "upng-js";
 
 const PLOT_QUERY = gql`
   query PlotOverlayDetails($tokenID: String!) {
@@ -13,10 +14,33 @@ const PLOT_QUERY = gql`
   }
 `;
 
+async function fetchImage(url: string) {
+  const response = await fetch(url);
+  const buffer = await response.arrayBuffer();
+  const img = UPNG.decode(buffer);
+  console.log(frames);
+  return img;
+}
+
 export const PlotDetails = ({plotId}: {plotId: number}) => {
   const {data} = useQuery(PLOT_QUERY, {
     variables: {tokenID: plotId?.toString()},
   });
+
+  // // TODO: try and draw animated apng into canvas to use as texture
+  // const [imageData, setImagedata] = useState<UPNG.Image | null>(null);
+  // // useEffect(() => {
+  // //   if (data?.token?.image) {
+  // //     fetchImage(data.token.image).then((data) => setImagedata(data));
+  // //   }
+  // // }, [data?.token?.image]);
+
+  // useEffect(() => {
+  //   if (imageData) {
+  //     console.log(" frames ", imageData.frames);
+  //   }
+  // }, [imageData]);
+
   const {camera, size} = useThree();
   const virtualScene = useMemo(() => new Scene(), []);
   const virtualCam = useRef<Camera>(camera);
