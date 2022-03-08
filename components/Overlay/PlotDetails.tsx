@@ -3,7 +3,7 @@ import {OrthographicCamera, useCamera, useTexture} from "@react-three/drei";
 import {createPortal, useFrame, useThree} from "@react-three/fiber";
 import {forwardRef, Suspense, useCallback, useMemo, useRef} from "react";
 import {Camera, Material, Mesh, Scene} from "three";
-import UPNG from "upng-js";
+// import UPNG from "upng-js";
 
 const PLOT_QUERY = gql`
   query PlotOverlayDetails($tokenID: String!) {
@@ -14,12 +14,12 @@ const PLOT_QUERY = gql`
   }
 `;
 
-async function fetchImage(url: string) {
-  const response = await fetch(url);
-  const buffer = await response.arrayBuffer();
-  const img = UPNG.decode(buffer);
-  return img;
-}
+// async function fetchImage(url: string) {
+//   const response = await fetch(url);
+//   const buffer = await response.arrayBuffer();
+//   const img = UPNG.decode(buffer);
+//   return img;
+// }
 
 export const PlotDetails = ({plotId}: {plotId: number}) => {
   const {data} = useQuery(PLOT_QUERY, {
