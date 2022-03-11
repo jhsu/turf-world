@@ -40,7 +40,7 @@ interface TokenTransferResponse {
     transfers: {createdAt: string; from: {id: string}; to: {id: string}}[];
   };
 }
-const PlotTransfers = ({tokenId}: {tokenId: number}) => {
+export const PlotTransfers = ({tokenId}: {tokenId: number}) => {
   const {data, loading} = useQuery<TokenTransferResponse, {id: string}>(query, {
     variables: {
       id: tokenId.toString(),
@@ -78,5 +78,3 @@ const PlotTransfers = ({tokenId}: {tokenId: number}) => {
     </Stack>
   );
 };
-
-export default PlotTransfers;

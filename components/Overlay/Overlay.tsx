@@ -7,10 +7,9 @@ import {FormEvent, Suspense, useState} from "react";
 
 import {viewPlot} from "~/store";
 import Associations from "~/components/Associations";
-import Address from "../Address/Address";
+import Address from "~/components/Address/Address";
 import {web3state} from "~/utils/web3";
-import {WalletPlots} from "../Plot";
-import PlotTransfers from "../Navi/PlotTransfers";
+import {PlotTransfers, WalletPlots} from "~/components/Plot";
 
 const FETCH_OWNER_PLOTS = gql`
   query GetOwnerPlots($tokenID: String!) {
