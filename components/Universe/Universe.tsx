@@ -99,7 +99,11 @@ const Universe = () => {
 
   return (
     <Container>
-      <div ref={dragRef} {...bind()} style={{ flex: 1, touchAction: "none" }}>
+      <div
+        ref={dragRef}
+        {...bind()}
+        style={{ flex: 1, touchAction: "none", minWidth: 0 }}
+      >
         <Canvas linear flat camera={{ position: [0, 0, 25] }}>
           {/* <OrbitControls /> */}
           <ApolloProvider client={client}>
