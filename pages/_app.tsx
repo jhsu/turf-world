@@ -12,11 +12,12 @@ const queryClient = new QueryClient({
 });
 
 const client = new ApolloClient({
-  uri: "https://api.thegraph.com/subgraphs/name/cosmoburn/turf-nft",
+  // uri: "https://api.thegraph.com/subgraphs/name/cosmoburn/turf-nft",
+  uri: "https://api.thegraph.com/subgraphs/name/jhsu/turf-nft",
   cache: new InMemoryCache(),
 });
 
-function MyApp({ Component, pageProps }: AppProps) {
+function MyApp({Component, pageProps}: AppProps) {
   return (
     <ApolloProvider client={client}>
       <QueryClientProvider client={queryClient}>

@@ -20,7 +20,6 @@ const FETCH_OWNER_PLOTS = gql`
         id
         tokens {
           id
-          tokenID
           image
         }
       }

@@ -17,7 +17,7 @@ export default function Address({address}: {address: string}) {
   const ending = useMemo(() => address.substring(38), [address]);
   const start = useMemo(() => address.substring(0, 38), [address]);
   return (
-    <Container>
+    <Container title={address}>
       <TruncateText>{start}</TruncateText>
       <span>{ending}</span>
     </Container>
