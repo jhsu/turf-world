@@ -1,13 +1,15 @@
-import {gql, useQuery} from "@apollo/client";
-import {useSnapshot} from "valtio";
+import { gql, useQuery } from "@apollo/client";
+import { useSnapshot } from "valtio";
 import * as Tabs from "@radix-ui/react-tabs";
-import {HouseLine, UsersThree} from "phosphor-react";
-import {styled} from "@stitches/react";
-import {FormEvent, Suspense} from "react";
+import { HouseLine, UsersThree, Wallet } from "phosphor-react";
+import { styled } from "@stitches/react";
+import { FormEvent, Suspense, useState } from "react";
 
-import {viewPlot} from "~/store";
+import { viewPlot } from "~/store";
 import Associations from "~/components/Associations";
 import Address from "../Address/Address";
+import { web3state } from "~/utils/web3";
+import { WalletPlots } from "../Plot";
 
 const FETCH_OWNER_PLOTS = gql`
   query GetOwnerPlots($tokenID: String!) {
@@ -26,11 +28,38 @@ const FETCH_OWNER_PLOTS = gql`
   }
 `;
 
-const TabNavRoot = styled(Tabs.Root, {
-  height: "100%",
+const ImagePlaceholder = styled("div", {
+  backgroundColor: "$blue",
+  aspectRatio: "1 / 1",
   width: "100%",
-  display: "flex",
-  flexDirection: "row",
+  overflow: "hidden",
+});
+
+const ImageContainer = styled("div", {
+  cursor: "zoom-in",
+  height: "100%",
+  variants: {
+    zoom: {
+      true: {
+        position: "absolute",
+        top: 0,
+        left: "50%",
+        marginLeft: "-25%",
+        height: "100vh",
+        cursor: "zoom-out",
+      },
+      false: {},
+    },
+  },
+});
+
+const Image = styled("img", {
+  backgroundColor: "$blue",
+  aspectRatio: "1 / 1",
+  height: "100%",
+});
+
+const TabNavRoot = styled(Tabs.Root, {
   gap: 16,
   color: "White",
   "& a": {
@@ -38,32 +67,28 @@ const TabNavRoot = styled(Tabs.Root, {
   },
 });
 const TabList = styled(Tabs.List, {
-  backgroundColor: "rgba(10,10,10,0.8)",
-  // width: 100,
-  height: 220,
   display: "flex",
-  flexDirection: "column",
+  flexDirection: "row",
   gap: 16,
   padding: 16,
   boxSizing: "border-box",
-  // justifyContent: "space-evenly",
+  justifyContent: "space-evenly",
 });
 const TabTrigger = styled(Tabs.Trigger, {
-  // flex: "1",
   background: "none",
   border: "none",
   cursor: "pointer",
   padding: 8,
+  fill: "gold",
+  color: "$gold",
   ['&[aria-selected="true"]']: {
-    background: "red",
-    borderRadius: "20%",
-    backgroundColor: "rgba(150,150,150,0.8)",
+    backgroundColor: "$gold",
+    color: "$orange",
+    fill: "$orange",
   },
 });
 const TabContent = styled(Tabs.Content, {
-  backgroundColor: "rgba(10,10,10,0.8)",
   overflow: "hidden",
-  padding: "$3",
   boxSizing: "border-box",
   flex: 1,
   variants: {
@@ -75,13 +100,8 @@ const TabContent = styled(Tabs.Content, {
 });
 
 const Container = styled("div", {
-  position: "absolute",
   padding: "$3",
   boxSizing: "border-box",
-  bottom: 0,
-  left: 0,
-  width: "100%",
-  maxWidth: 540,
 });
 
 const PlotActions = styled("div", {
@@ -92,14 +112,15 @@ const PlotActions = styled("div", {
 });
 
 const Overlay = () => {
-  const {plotId, showDetails} = useSnapshot(viewPlot);
+  const { plotId, showDetails } = useSnapshot(viewPlot);
+  const { connect, disconnect, isConnected, account } = useSnapshot(web3state);
 
   const {
     data: tokenData,
     previousData,
     loading,
   } = useQuery(FETCH_OWNER_PLOTS, {
-    variables: {tokenID: plotId?.toString()},
+    variables: { tokenID: plotId?.toString() },
     skip: plotId === null,
   });
 
@@ -110,6 +131,20 @@ const Overlay = () => {
       parseInt(form.get("plotId")?.toString() ?? "", 10) ?? plotId;
   };
 
+  const onSelect = (tokenId: number) => {
+    viewPlot.plotId = tokenId;
+  };
+
+  const onConnect = () => {
+    connect();
+  };
+
+  const onDisconnect = async () => {
+    await disconnect();
+  };
+
+  const [zoom, setZoom] = useState(false);
+
   const data = tokenData ?? previousData;
 
   return (
@@ -117,10 +152,13 @@ const Overlay = () => {
       <TabNavRoot orientation="vertical" defaultValue="owner">
         <TabList aria-label="Plot Navigation">
           <TabTrigger value="owner">
-            <HouseLine weight="duotone" color="#ffffff" size={32} />
+            <HouseLine weight="duotone" size={32} />
           </TabTrigger>
           <TabTrigger value="associations">
-            <UsersThree weight="duotone" color="#ffffff" size={32} />
+            <UsersThree weight="duotone" size={32} />
+          </TabTrigger>
+          <TabTrigger value="wallet">
+            <Wallet weight="duotone" size={32} />
           </TabTrigger>
         </TabList>
 
@@ -128,7 +166,7 @@ const Overlay = () => {
           {showDetails && data && (
             <div>
               <div>
-                <h2>Plot {plotId}</h2>
+                <h2>Plot {data.token?.id}</h2>
                 <PlotActions>
                   <a
                     href={`https://opensea.io/assets/0x55d89273143de3de00822c9271dbcbd9b44b44c6/${plotId}`}
@@ -138,16 +176,20 @@ const Overlay = () => {
                   >
                     Opensea🔗
                   </a>
-                  <a
-                    href={data.token?.image}
-                    target="_blank"
-                    rel="noreferrer"
-                    title="View higher definition image"
-                  >
-                    Image
-                  </a>
                 </PlotActions>
               </div>
+              <ImagePlaceholder>
+                {data.token?.image && (
+                  <ImageContainer zoom={zoom}>
+                    <Image
+                      key={data.token.id}
+                      src={data.token.image}
+                      title={`plot ${data.token.id}`}
+                      onClick={() => setZoom((prev) => !prev)}
+                    />
+                  </ImageContainer>
+                )}
+              </ImagePlaceholder>
               <div>
                 <small>Owned by</small>
                 <Address address={data.token?.owner?.id} />
@@ -159,6 +201,17 @@ const Overlay = () => {
         <TabContent value="associations">
           <Suspense fallback={null}>
             <Associations />
+          </Suspense>
+        </TabContent>
+
+        <TabContent value="wallet">
+          {!isConnected ? (
+            <button onClick={onConnect}>connect</button>
+          ) : (
+            <button onClick={onDisconnect}>disconnect</button>
+          )}
+          <Suspense fallback={null}>
+            {account && <WalletPlots address={account} onSelect={onSelect} />}
           </Suspense>
         </TabContent>
       </TabNavRoot>

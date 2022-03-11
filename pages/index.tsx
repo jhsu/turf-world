@@ -1,4 +1,4 @@
-import type {NextPage} from "next";
+import type { NextPage } from "next";
 import Universe from "~/components/Universe";
 
 const Home: NextPage = () => {

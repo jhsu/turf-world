@@ -1,5 +1,5 @@
-import {Viewport} from "@react-three/fiber";
-import {proxyWithComputed} from "valtio/utils";
+import { Viewport } from "@react-three/fiber";
+import { proxyWithComputed } from "valtio/utils";
 
 import LOCATIONS from "../components/World/positions";
 

@@ -1,4 +1,4 @@
-import {Suspense, useCallback, useEffect, useMemo, useRef} from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef } from "react";
 import {
   InstancedMesh,
   Object3D,
@@ -6,19 +6,18 @@ import {
   Vector2,
   Vector3 as Vec3,
 } from "three";
-import {extend, ThreeEvent, useFrame, useThree} from "@react-three/fiber";
-import {shaderMaterial, useTexture} from "@react-three/drei";
+import { extend, ThreeEvent, useFrame, useThree } from "@react-three/fiber";
+import { shaderMaterial, useTexture } from "@react-three/drei";
 
-import {viewPlot} from "~/store";
+import { viewPlot } from "~/store";
 import LOCATIONS from "./positions";
-import {PlotDetails} from "../Overlay";
 
 const SIZE = 5;
 const TOKENS = 5041;
 const STEP = 0.1;
 
 const PlotSpriteMaterial = shaderMaterial(
-  {map: new Texture(), cFactor: 1},
+  { map: new Texture(), cFactor: 1 },
   `
 attribute vec2 aOffset;
 attribute float cFactor;
@@ -65,7 +64,7 @@ void main(){
 }
   `
 );
-extend({PlotSpriteMaterial});
+extend({ PlotSpriteMaterial });
 type PlotSpriteImpl = {
   map: Texture;
   aOffset?: Vector2;
@@ -100,14 +99,14 @@ interface WorldProps {
   onSelectPlot(id: number): void;
   plotId: number | null;
 }
-const World = ({onSelectPlot, plotId}: WorldProps) => {
-  const {viewport} = useThree();
+const World = ({ onSelectPlot, plotId }: WorldProps) => {
+  const { viewport } = useThree();
   useEffect(() => {
     viewPlot.viewport = viewport;
   }, [viewport]);
 
   const vCam = useMemo(() => new Vec3(...LOCATIONS[0], viewPlot.cameraZ), []);
-  useFrame(({camera}) => {
+  useFrame(({ camera }) => {
     const camPos = viewPlot.cameraLocation;
     if (camPos) {
       vCam.set(...camPos);
@@ -119,7 +118,7 @@ const World = ({onSelectPlot, plotId}: WorldProps) => {
   const tokens = useMemo(() => {
     let ids = [];
     for (let i = 0; i < TOKENS; i++) {
-      ids.push({id: i, position: LOCATIONS[i]});
+      ids.push({ id: i, position: LOCATIONS[i] });
     }
     return ids;
   }, []);
@@ -131,7 +130,6 @@ const World = ({onSelectPlot, plotId}: WorldProps) => {
         plotId={plotId}
         onSelect={onSelectPlot}
       />
-      {plotId !== null && <PlotDetails plotId={plotId} />}
     </>
   );
 };
@@ -139,7 +137,7 @@ const World = ({onSelectPlot, plotId}: WorldProps) => {
 interface InstancedMeshTilesProps {
   plotId: number | null;
   onSelect: (id: number) => void;
-  tokens: {position: [number, number]; id: number}[];
+  tokens: { position: [number, number]; id: number }[];
 }
 const InstancedMeshTiles = ({
   tokens,

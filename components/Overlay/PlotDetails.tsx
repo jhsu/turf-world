@@ -1,8 +1,8 @@
-import {gql, useQuery} from "@apollo/client";
-import {OrthographicCamera, useCamera, useTexture} from "@react-three/drei";
-import {createPortal, useFrame, useThree} from "@react-three/fiber";
-import {forwardRef, Suspense, useCallback, useMemo, useRef} from "react";
-import {Camera, Material, Mesh, Scene} from "three";
+import { gql, useQuery } from "@apollo/client";
+import { OrthographicCamera, useCamera, useTexture } from "@react-three/drei";
+import { createPortal, useFrame, useThree } from "@react-three/fiber";
+import { forwardRef, Suspense, useCallback, useMemo, useRef } from "react";
+import { Camera, Material, Mesh, Scene } from "three";
 // import UPNG from "upng-js";
 
 const PLOT_QUERY = gql`
@@ -14,16 +14,9 @@ const PLOT_QUERY = gql`
   }
 `;
 
-// async function fetchImage(url: string) {
-//   const response = await fetch(url);
-//   const buffer = await response.arrayBuffer();
-//   const img = UPNG.decode(buffer);
-//   return img;
-// }
-
-export const PlotDetails = ({plotId}: {plotId: number}) => {
-  const {data} = useQuery(PLOT_QUERY, {
-    variables: {tokenID: plotId?.toString()},
+export const PlotDetails = ({ plotId }: { plotId: number }) => {
+  const { data } = useQuery(PLOT_QUERY, {
+    variables: { tokenID: plotId?.toString() },
   });
 
   // // TODO: try and draw animated apng into canvas to use as texture
@@ -40,10 +33,10 @@ export const PlotDetails = ({plotId}: {plotId: number}) => {
   //   }
   // }, [imageData]);
 
-  const {camera, size} = useThree();
+  const { camera, size } = useThree();
   const virtualScene = useMemo(() => new Scene(), []);
   const virtualCam = useRef<Camera>(camera);
-  useFrame(({scene, camera, gl}) => {
+  useFrame(({ scene, camera, gl }) => {
     gl.autoClear = true;
     gl.render(scene, camera);
     gl.autoClear = false;
@@ -103,7 +96,7 @@ export const PlotDetails = ({plotId}: {plotId: number}) => {
   ) as any;
 };
 
-const FullResTexture = forwardRef<Material, {url: string}>(({url}, ref) => {
+const FullResTexture = forwardRef<Material, { url: string }>(({ url }, ref) => {
   const [img] = useTexture([url]);
 
   return (
