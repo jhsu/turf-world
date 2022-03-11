@@ -11,6 +11,7 @@ import { shaderMaterial, useTexture } from "@react-three/drei";
 
 import { viewPlot } from "~/store";
 import LOCATIONS from "./positions";
+import { useKeyPress } from "~/utils/useKey";
 
 const SIZE = 5;
 const TOKENS = 5041;
@@ -82,10 +83,11 @@ declare global {
 function findNeighbors(plotId: number): number[] {
   const [x, y] = LOCATIONS[plotId];
   const neighbors: number[] = [];
-  for (let i = -1; i <= 1; i++) {
+  const entries = Object.entries(LOCATIONS);
+  for (let i = 1; i >= -1; i--) {
     for (let j = -1; j <= 1; j++) {
-      const found = Object.entries(LOCATIONS).find(
-        ([, [x2, y2]]) => x2 === x + i && y2 === y + j
+      const found = entries.find(
+        ([, [x2, y2]]) => x2 === x + j && y2 === y + i
       );
       if (found) {
         neighbors.push(parseInt(found[0], 10));
@@ -93,6 +95,28 @@ function findNeighbors(plotId: number): number[] {
     }
   }
   return neighbors;
+}
+// TODO: convert LOCATIONS to coordiate system for lookup
+
+function moveUp() {
+  if (viewPlot.plotId === null) return;
+  const neighbors = findNeighbors(viewPlot.plotId);
+  viewPlot.plotId = neighbors[1];
+}
+function moveDown() {
+  if (viewPlot.plotId === null) return;
+  const neighbors = findNeighbors(viewPlot.plotId);
+  viewPlot.plotId = neighbors[7];
+}
+function moveLeft() {
+  if (viewPlot.plotId === null) return;
+  const neighbors = findNeighbors(viewPlot.plotId);
+  viewPlot.plotId = neighbors[3];
+}
+function moveRight() {
+  if (viewPlot.plotId === null) return;
+  const neighbors = findNeighbors(viewPlot.plotId);
+  viewPlot.plotId = neighbors[5];
 }
 
 interface WorldProps {
@@ -104,6 +128,16 @@ const World = ({ onSelectPlot, plotId }: WorldProps) => {
   useEffect(() => {
     viewPlot.viewport = viewport;
   }, [viewport]);
+
+  const neighbors = useMemo(
+    () => (plotId !== null ? findNeighbors(plotId) : []),
+    [plotId]
+  );
+
+  useKeyPress("w", moveUp);
+  useKeyPress("s", moveDown);
+  useKeyPress("a", moveLeft);
+  useKeyPress("d", moveRight);
 
   const vCam = useMemo(() => new Vec3(...LOCATIONS[0], viewPlot.cameraZ), []);
   useFrame(({ camera }) => {
@@ -128,6 +162,7 @@ const World = ({ onSelectPlot, plotId }: WorldProps) => {
       <InstancedMeshTiles
         tokens={tokens}
         plotId={plotId}
+        neighbors={neighbors}
         onSelect={onSelectPlot}
       />
     </>
@@ -138,18 +173,18 @@ interface InstancedMeshTilesProps {
   plotId: number | null;
   onSelect: (id: number) => void;
   tokens: { position: [number, number]; id: number }[];
+  neighbors?: number[];
 }
 const InstancedMeshTiles = ({
   tokens,
   plotId,
   onSelect,
+  neighbors = [],
 }: InstancedMeshTilesProps) => {
   const meshRef = useRef<InstancedMesh>();
 
   const dimFactors = useMemo(() => {
     const cFactors = [];
-    const neighbors = plotId !== null ? findNeighbors(plotId) : [];
-
     for (let i = 0; i < TOKENS; i++) {
       if (plotId === null) {
         cFactors.push(1);
@@ -164,7 +199,7 @@ const InstancedMeshTiles = ({
       }
     }
     return cFactors;
-  }, [plotId]);
+  }, [plotId, neighbors]);
 
   const positions: number[] = useMemo(
     () =>
