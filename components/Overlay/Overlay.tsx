@@ -1,15 +1,16 @@
-import { gql, useQuery } from "@apollo/client";
-import { useSnapshot } from "valtio";
+import {gql, useQuery} from "@apollo/client";
+import {useSnapshot} from "valtio";
 import * as Tabs from "@radix-ui/react-tabs";
-import { HouseLine, UsersThree, Wallet } from "phosphor-react";
-import { styled } from "@stitches/react";
-import { FormEvent, Suspense, useState } from "react";
+import {HouseLine, UsersThree, Wallet} from "phosphor-react";
+import {styled} from "@stitches/react";
+import {FormEvent, Suspense, useState} from "react";
 
-import { viewPlot } from "~/store";
+import {viewPlot} from "~/store";
 import Associations from "~/components/Associations";
 import Address from "../Address/Address";
-import { web3state } from "~/utils/web3";
-import { WalletPlots } from "../Plot";
+import {web3state} from "~/utils/web3";
+import {WalletPlots} from "../Plot";
+import PlotTransfers from "../Navi/PlotTransfers";
 
 const FETCH_OWNER_PLOTS = gql`
   query GetOwnerPlots($tokenID: String!) {
@@ -59,6 +60,9 @@ const Image = styled("img", {
 });
 
 const TabNavRoot = styled(Tabs.Root, {
+  display: "flex",
+  flexDirection: "column",
+  height: "100%",
   gap: 16,
   color: "White",
   "& a": {
@@ -69,7 +73,6 @@ const TabList = styled(Tabs.List, {
   display: "flex",
   flexDirection: "row",
   gap: 16,
-  padding: 16,
   boxSizing: "border-box",
   justifyContent: "space-evenly",
 });
@@ -87,9 +90,10 @@ const TabTrigger = styled(Tabs.Trigger, {
   },
 });
 const TabContent = styled(Tabs.Content, {
-  overflow: "hidden",
-  boxSizing: "border-box",
   flex: 1,
+  overflow: "auto",
+  boxSizing: "border-box",
+  padding: "$3",
   variants: {
     loading: {
       true: {},
@@ -99,8 +103,9 @@ const TabContent = styled(Tabs.Content, {
 });
 
 const Container = styled("div", {
-  padding: "$3",
+  // padding: "$3",
   boxSizing: "border-box",
+  height: "100%",
 });
 
 const PlotActions = styled("div", {
@@ -111,15 +116,15 @@ const PlotActions = styled("div", {
 });
 
 const Overlay = () => {
-  const { plotId, showDetails } = useSnapshot(viewPlot);
-  const { connect, disconnect, isConnected, account } = useSnapshot(web3state);
+  const {plotId, showDetails} = useSnapshot(viewPlot);
+  const {connect, disconnect, isConnected, account} = useSnapshot(web3state);
 
   const {
     data: tokenData,
     previousData,
     loading,
   } = useQuery(FETCH_OWNER_PLOTS, {
-    variables: { tokenID: plotId?.toString() },
+    variables: {tokenID: plotId?.toString()},
     skip: plotId === null,
   });
 
@@ -178,13 +183,14 @@ const Overlay = () => {
                 </PlotActions>
               </div>
               <ImagePlaceholder>
-                {data.token?.image && (
+                {data.token.image && (
                   <ImageContainer zoom={zoom}>
                     <Image
                       key={data.token.id}
                       src={data.token.image}
                       title={`plot ${data.token.id}`}
                       onClick={() => setZoom((prev) => !prev)}
+                      alt={`Turf plot ${data.token.id}`}
                     />
                   </ImageContainer>
                 )}
@@ -192,6 +198,11 @@ const Overlay = () => {
               <div>
                 <small>Owned by</small>
                 <Address address={data.token?.owner?.id} />
+              </div>
+
+              <div>
+                <h3>Transfers</h3>
+                <PlotTransfers tokenId={data.token.id} />
               </div>
             </div>
           )}
