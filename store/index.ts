@@ -29,9 +29,10 @@ export const viewPlot = proxyWithComputed<ViewPlot, ViewPlotSetters>(
     plotId: {
       get: (state) => state.selectedPlotId,
       set: (state, value) => {
-        state.selectedPlotId = value;
-        if (value !== null) {
-          const [x, y] = LOCATIONS[value];
+        state.selectedPlotId = value ?? null;
+        const plotId = state.selectedPlotId;
+        if (plotId !== null && LOCATIONS[plotId]) {
+          const [x, y] = LOCATIONS[plotId];
           state.cameraPosition = [x * SIZE, y * SIZE];
         }
       },

@@ -80,9 +80,9 @@ declare global {
   }
 }
 
-function findNeighbors(plotId: number): number[] {
+function findNeighbors(plotId: number): (number | null)[] {
   const [x, y] = LOCATIONS[plotId];
-  const neighbors: number[] = [];
+  const neighbors: (number | null)[] = [];
   const entries = Object.entries(LOCATIONS);
   for (let i = 1; i >= -1; i--) {
     for (let j = -1; j <= 1; j++) {
@@ -91,6 +91,8 @@ function findNeighbors(plotId: number): number[] {
       );
       if (found) {
         neighbors.push(parseInt(found[0], 10));
+      } else {
+        neighbors.push(null);
       }
     }
   }
@@ -101,22 +103,22 @@ function findNeighbors(plotId: number): number[] {
 function moveUp() {
   if (viewPlot.plotId === null) return;
   const neighbors = findNeighbors(viewPlot.plotId);
-  viewPlot.plotId = neighbors[1];
+  viewPlot.plotId = neighbors[1] ?? viewPlot.plotId;
 }
 function moveDown() {
   if (viewPlot.plotId === null) return;
   const neighbors = findNeighbors(viewPlot.plotId);
-  viewPlot.plotId = neighbors[7];
+  viewPlot.plotId = neighbors[7] ?? viewPlot.plotId;
 }
 function moveLeft() {
   if (viewPlot.plotId === null) return;
   const neighbors = findNeighbors(viewPlot.plotId);
-  viewPlot.plotId = neighbors[3];
+  viewPlot.plotId = neighbors[3] ?? viewPlot.plotId;
 }
 function moveRight() {
   if (viewPlot.plotId === null) return;
   const neighbors = findNeighbors(viewPlot.plotId);
-  viewPlot.plotId = neighbors[5];
+  viewPlot.plotId = neighbors[5] ?? viewPlot.plotId;
 }
 
 interface WorldProps {
