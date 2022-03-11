@@ -12,6 +12,7 @@ import { shaderMaterial, useTexture } from "@react-three/drei";
 import { viewPlot } from "~/store";
 import LOCATIONS from "./positions";
 import { useKeyPress } from "~/utils/useKey";
+import { NextRouter } from "next/router";
 
 const SIZE = 5;
 const TOKENS = 5041;
@@ -104,28 +105,33 @@ function moveUp() {
   if (viewPlot.plotId === null) return;
   const neighbors = findNeighbors(viewPlot.plotId);
   viewPlot.plotId = neighbors[1] ?? viewPlot.plotId;
+  return viewPlot.plotId;
 }
 function moveDown() {
   if (viewPlot.plotId === null) return;
   const neighbors = findNeighbors(viewPlot.plotId);
   viewPlot.plotId = neighbors[7] ?? viewPlot.plotId;
+  return viewPlot.plotId;
 }
 function moveLeft() {
   if (viewPlot.plotId === null) return;
   const neighbors = findNeighbors(viewPlot.plotId);
   viewPlot.plotId = neighbors[3] ?? viewPlot.plotId;
+  return viewPlot.plotId;
 }
 function moveRight() {
   if (viewPlot.plotId === null) return;
   const neighbors = findNeighbors(viewPlot.plotId);
   viewPlot.plotId = neighbors[5] ?? viewPlot.plotId;
+  return viewPlot.plotId;
 }
 
 interface WorldProps {
   onSelectPlot(id: number): void;
   plotId: number | null;
+  router: NextRouter;
 }
-const World = ({ onSelectPlot, plotId }: WorldProps) => {
+const World = ({ onSelectPlot, plotId, router }: WorldProps) => {
   const { viewport } = useThree();
   useEffect(() => {
     viewPlot.viewport = viewport;
@@ -136,10 +142,32 @@ const World = ({ onSelectPlot, plotId }: WorldProps) => {
     [plotId]
   );
 
-  useKeyPress("w", moveUp);
-  useKeyPress("s", moveDown);
-  useKeyPress("a", moveLeft);
-  useKeyPress("d", moveRight);
+  const actions = useMemo(
+    () => ({
+      moveUp: () => {
+        const plotId = moveUp();
+        router.push(`/plots/${plotId}`);
+      },
+      moveRight: () => {
+        const plotId = moveRight();
+        router.push(`/plots/${plotId}`);
+      },
+      moveDown: () => {
+        const plotId = moveDown();
+        router.push(`/plots/${plotId}`);
+      },
+      moveLeft: () => {
+        const plotId = moveLeft();
+        router.push(`/plots/${plotId}`);
+      },
+    }),
+    [router]
+  );
+
+  useKeyPress("w", actions.moveUp);
+  useKeyPress("s", actions.moveDown);
+  useKeyPress("a", actions.moveLeft);
+  useKeyPress("d", actions.moveRight);
 
   const vCam = useMemo(() => new Vec3(...LOCATIONS[0], viewPlot.cameraZ), []);
   useFrame(({ camera }) => {
