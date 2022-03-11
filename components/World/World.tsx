@@ -159,12 +159,17 @@ const World = ({ onSelectPlot, plotId }: WorldProps) => {
     return ids;
   }, []);
 
+  const presentNeighbors = useMemo(
+    () => neighbors.filter((i) => i !== null) as number[],
+    [neighbors]
+  );
+
   return (
     <>
       <InstancedMeshTiles
         tokens={tokens}
         plotId={plotId}
-        neighbors={neighbors}
+        neighbors={presentNeighbors}
         onSelect={onSelectPlot}
       />
     </>

@@ -1,5 +1,5 @@
-import {supabase} from "~/store/supabase";
-import {ethers} from "ethers";
+import { supabase } from "~/store/supabase";
+import { ethers } from "ethers";
 
 import {
   associationTokenIds,
@@ -7,7 +7,7 @@ import {
   useSigner,
   verifyAssociationMembership,
 } from "~/utils/tokenHolders";
-import {NextApiHandler, NextApiRequest} from "next";
+import { NextApiHandler, NextApiRequest } from "next";
 
 interface Vote {
   yes: boolean;
@@ -21,9 +21,9 @@ interface Proposal {
 
 export const handler: NextApiHandler = async (req, res) => {
   if (req.method === "POST") {
-    return res.json({message: "hi"});
+    return res.json({ message: "hi" });
   }
-  return res.json({message: "hi"});
+  return res.json({ message: "hi" });
 };
 /*
 import invariant from "tiny-invariant";
