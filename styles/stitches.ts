@@ -1,7 +1,11 @@
-import {createStitches} from "@stitches/react";
+import { createStitches } from "@stitches/react";
 
-export const {styled, css} = createStitches({
+export const { styled, css } = createStitches({
   theme: {
+    media: {
+      bp1: "(min-width 568px)",
+      bp2: "(min-width 1024px)",
+    },
     colors: {
       grey: "#cccccc",
       white: "#ffffff",
