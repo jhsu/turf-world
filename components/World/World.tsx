@@ -10,9 +10,11 @@ import { extend, ThreeEvent, useFrame, useThree } from "@react-three/fiber";
 import { shaderMaterial, useTexture } from "@react-three/drei";
 
 import { viewPlot } from "~/store";
+import PlotAvatars from "~/components/PlotAvatars";
 import LOCATIONS from "./positions";
 import { useKeyPress } from "~/utils/useKey";
 import { NextRouter } from "next/router";
+import { PlotDetails } from "../Overlay/PlotDetails";
 
 const SIZE = 5;
 const TOKENS = 5041;
@@ -191,9 +193,13 @@ const World = ({ onSelectPlot, plotId, router }: WorldProps) => {
     () => neighbors.filter((i) => i !== null) as number[],
     [neighbors]
   );
+  //
+  // if there's a selected plot and it is "entered", show avatars
+  const showAvatars = plotId !== null;
 
   return (
     <>
+      {showAvatars && <PlotAvatars />}
       <InstancedMeshTiles
         tokens={tokens}
         plotId={plotId}

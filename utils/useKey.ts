@@ -4,7 +4,6 @@ export function useKeyPress(key: string, handler: (evt: Event) => void) {
   const eventListenerRef = useRef<(evt: KeyboardEvent) => void>();
 
   useEffect(() => {
-    console.log("redefine movement");
     eventListenerRef.current = (event: KeyboardEvent) => {
       if (event.key === key) {
         handler?.(event);
